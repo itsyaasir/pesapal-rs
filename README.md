@@ -18,7 +18,7 @@ pesapal-rs = { git = "https://github.com/itsyaasir/pesapal-rs" }
 
 ## Author
 
-**Collins Muriuki**
+**Yasir Shariff**
 
 - Twitter: [@itsyaasir](https://twitter.com/itsyaasir)
 - Not affiliated with PesaPal.
