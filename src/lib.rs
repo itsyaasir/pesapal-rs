@@ -1,7 +1,6 @@
-#[macro_use]
-
-mod error;
+pub mod environment;
+pub mod error;
 pub mod macros;
-mod pesapal;
-mod types;
-mod environemt;
+pub mod pesapal;
+
+pub use pesapal::PesaPal;
