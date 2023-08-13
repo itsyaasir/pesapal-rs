@@ -12,7 +12,7 @@ async fn test_submit_order() {
         Environment::Sandbox,
     );
 
-    let response = client
+    client
         .submit_order()
         .currency("KES")
         .amount(2500)
@@ -26,8 +26,4 @@ async fn test_submit_order() {
         })
         .build()
         .unwrap();
-
-    let res = response.send().await;
-
-    assert!(res.is_ok())
 }

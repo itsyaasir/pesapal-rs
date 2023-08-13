@@ -1,6 +1,7 @@
+use std::str::FromStr;
+
 use crate::env_from_string;
 use crate::error::PesaPalError;
-use std::str::FromStr;
 
 #[derive(Debug, Clone, Eq, PartialEq, Default)]
 pub enum Environment {

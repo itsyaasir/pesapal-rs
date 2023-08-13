@@ -1,16 +1,14 @@
 mod auth;
 mod submit_order;
 
-use crate::environment::Environment;
-use crate::error::{PesaPalError, PesaPalResult};
-use crate::pesapal::auth::AuthenticationResponse;
-
 use reqwest::Client as HttpClient;
 use serde_json::json;
-
 pub use submit_order::BillingAddress;
 
 use self::submit_order::{SubmitOrder, SubmitOrderBuilder};
+use crate::environment::Environment;
+use crate::error::{PesaPalError, PesaPalResult};
+use crate::pesapal::auth::AuthenticationResponse;
 
 static CARGO_PACKAGE_VERSION: &str = env!("CARGO_PKG_VERSION");
 

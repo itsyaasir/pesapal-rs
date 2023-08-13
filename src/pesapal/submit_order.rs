@@ -1,11 +1,9 @@
 use derive_builder::Builder;
 use serde::{Deserialize, Serialize};
-
 use uuid::Uuid;
 
-use crate::error::{PesaPalError, PesaPalErrorResponse, PesaPalResult};
-
 use super::PesaPal;
+use crate::error::{PesaPalError, PesaPalErrorResponse, PesaPalResult};
 
 pub const SUBMIT_ORDER_REQUEST_URL: &str = "api/Transactions/SubmitOrderRequest";
 
@@ -154,11 +152,6 @@ impl<'pesa> SubmitOrder<'pesa> {
 impl SubmitOrder<'_> {
     pub async fn send(self) -> PesaPalResult<SubmitOrderResponse> {
         let url = format!("{}/{SUBMIT_ORDER_REQUEST_URL}", self.client.env.base_url());
-        println!(
-            "params : {:?}",
-            serde_json::json!(Into::<SubmitOrderRequest>::into(self.clone()))
-        );
-
         let response = self
             .client
             .http_client
