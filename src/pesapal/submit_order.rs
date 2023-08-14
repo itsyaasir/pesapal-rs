@@ -46,7 +46,7 @@ pub struct BillingAddress {
     /// This is optional if email address has been provided,
     /// Otherwise mandatory
     ///
-    pub phone_number: Option<String>,
+    pub phone_number: Option<u64>,
     /// country code in [ISO-3166-1]
     ///
     /// It is usually two characters long
@@ -73,6 +73,27 @@ pub struct BillingAddress {
     pub postal_code: Option<String>,
     /// Customer's zip code
     pub zip_code: Option<String>,
+}
+
+impl BillingAddress {
+    /// Create a new billing address
+    ///
+    /// Either the phone number or the email must be provided,
+    /// otherwise the request will fail.
+    ///
+    pub fn new(&self, phone_number: Option<u64>, email: Option<String>) -> PesaPalResult<Self> {
+        if phone_number.is_none() && email.is_none() {
+            return Err(PesaPalError::ValidationError(
+                "either email or password need to be provided".to_string(),
+            ));
+        }
+
+        Ok(Self {
+            email_address: email,
+            phone_number,
+            ..Default::default()
+        })
+    }
 }
 
 impl From<SubmitOrder<'_>> for SubmitOrderRequest {
@@ -122,11 +143,17 @@ pub struct SubmitOrder<'pesa> {
     #[doc = r"Description of the order"]
     pub description: String,
     #[builder(setter(into))]
+    #[doc = r"URL which PesaPal will re-direct for the payment processing"]
     pub callback_url: String,
     #[builder(setter(into, strip_option), default)]
+    #[doc = r"A valid URL which PesaPal will redirect client incase
+    they cancel the payment"]
     pub cancellation_url: Option<String>,
     #[builder(setter(into))]
+    #[doc = r"This represents IPN URLs which Pesapal will send notifications
+    after the payment have been processed"]
     pub notification_id: String,
+    #[doc = r"The billing address of the customer"]
     pub billing_address: BillingAddress,
 }
 
@@ -144,12 +171,25 @@ impl SubmitOrderBuilder<'_> {
 }
 
 impl<'pesa> SubmitOrder<'pesa> {
+    /// This initializes the SubmitOrder with the client and returns a builder
     pub fn builder(client: &'pesa PesaPal) -> SubmitOrderBuilder<'pesa> {
         SubmitOrderBuilder::default().client(client)
     }
 }
 
 impl SubmitOrder<'_> {
+    /// # Submit Order Request
+    ///
+    /// Sends the Order for payment processing
+    ///
+    /// ## Returns
+    ///
+    /// [SubmitOrderResponse] - Contains the necessary which conveys the
+    /// successful result of the payment
+    ///
+    /// ## Errors
+    ///
+    /// [SubmitOrderError] - Incase the payment fails
     pub async fn send(self) -> PesaPalResult<SubmitOrderResponse> {
         let url = format!("{}/{SUBMIT_ORDER_REQUEST_URL}", self.client.env.base_url());
         let response = self

@@ -24,4 +24,4 @@ features = [
 [dependencies.tokio]
 version = "1.31"
 default_features = false
-features = ["macros", "rt"]
+features = ["macros", "rt", "rt-multi-thread"]

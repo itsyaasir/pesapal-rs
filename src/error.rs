@@ -1,6 +1,7 @@
 use serde::Deserialize;
 
 #[derive(Debug, Clone, thiserror::Error)]
+#[non_exhaustive]
 pub enum PesaPalError {
     #[error("internal error occurred : {0}")]
     Internal(String),
@@ -13,13 +14,14 @@ pub enum PesaPalError {
     ReqwestError(String),
     #[error("unsupported environment {0}")]
     UnsupportedEnvironment(String),
+    #[error("validation error")]
+    ValidationError(String),
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize)]
 
 pub struct PesaPalErrorResponse {
     pub code: String,
-    #[serde(rename = "error_type")]
     pub error_type: String,
     pub message: String,
 }
@@ -33,7 +35,7 @@ impl std::fmt::Display for PesaPalErrorResponse {
         )
     }
 }
-
+/// Type alias for the result
 pub type PesaPalResult<T> = Result<T, PesaPalError>;
 
 impl From<reqwest::Error> for PesaPalError {
