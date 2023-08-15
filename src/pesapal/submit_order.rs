@@ -1,3 +1,15 @@
+//! The submit order endpoint allows to create new payment order
+//! A good example would be a case where the customer has clicked pay now
+//! button on your website. At this point, you call the SubmitOrderRequest and
+//! in return you will get a response which contains a payment redirect URL
+//! which you then redirect the customer to or load the URL as an iframe within
+//! your site in case you don’t want to redirect the customer off your application.
+
+//! The payment URL will contain the payment methods presented to the customer
+//! by Pesapal. After the customer has made the payment, they will be
+//! redirected to your callback URL which you will have already provided to us
+//! as part of submit order request.
+
 use derive_builder::Builder;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -8,7 +20,7 @@ use crate::error::{PesaPalError, PesaPalErrorResponse, PesaPalResult};
 pub const SUBMIT_ORDER_REQUEST_URL: &str = "api/Transactions/SubmitOrderRequest";
 
 /// Submit Order Request
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct SubmitOrderRequest {
     /// Unique merchant reference
     pub id: String,
@@ -18,6 +30,14 @@ pub struct SubmitOrderRequest {
     pub amount: u64,
     /// Description of the order
     pub description: String,
+    /// Accepts values TOP_WINDOW or PARENT_WINDOW.
+    /// If left blank, the default value used will be TOP_WINDOW.
+    /// This parameter allows you to define where your callback URL will be
+    /// loaded;
+    /// * TOP_WINDOW returns to the topmost window in the hierarchy of
+    /// windows.
+    /// * PARENT_WINDOW returns the immediate parent of a window.
+    pub redirect_mode: RedirectMode,
     /// A URL which PesaPal will redirect to process the payment
     pub callback_url: String,
     /// A URL which will redirect the client incase the click on cancel request
@@ -27,12 +47,24 @@ pub struct SubmitOrderRequest {
     ///
     /// You are required to register all IPN Urls
     pub notification_id: String,
+    /// If your business has multiple stores / branches, you can define the
+    /// name of the store / branch to which this particular payment will be
+    /// accredited to.
+    pub branch: Option<String>,
     /// Billing address of the customer
     pub billing_address: BillingAddress,
 }
 
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum RedirectMode {
+    #[default]
+    TopWindow,
+    ParentWindow,
+}
+
 /// The billing address of a customer
-#[derive(Debug, Clone, PartialEq, Serialize, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Default)]
 pub struct BillingAddress {
     /// customer's email address.
     ///
@@ -103,9 +135,11 @@ impl From<SubmitOrder<'_>> for SubmitOrderRequest {
             currency: value.currency,
             amount: value.amount,
             description: value.description,
+            redirect_mode: value.redirect_mode,
             callback_url: value.callback_url,
             notification_id: value.notification_id,
             cancellation_url: value.cancellation_url,
+            branch: value.branch,
             billing_address: value.billing_address,
         }
     }
@@ -142,6 +176,15 @@ pub struct SubmitOrder<'pesa> {
     #[builder(setter(into))]
     #[doc = r"Description of the order"]
     pub description: String,
+    #[builder(default)]
+    #[doc = r"Accepts values TOP_WINDOW or PARENT_WINDOW.
+     If left blank, the default value used will be TOP_WINDOW.
+     This parameter allows you to define where your callback URL will be
+     loaded;
+     - TOP_WINDOW returns to the topmost window in the hierarchy of
+     windows.
+     - PARENT_WINDOW returns the immediate parent of a window."]
+    pub redirect_mode: RedirectMode,
     #[builder(setter(into))]
     #[doc = r"URL which PesaPal will re-direct for the payment processing"]
     pub callback_url: String,
@@ -153,6 +196,10 @@ pub struct SubmitOrder<'pesa> {
     #[doc = r"This represents IPN URLs which Pesapal will send notifications
     after the payment have been processed"]
     pub notification_id: String,
+    #[builder(setter(into, strip_option), default)]
+    #[doc = r"If your business has multiple stores / branches, you can define the name of the store / branch to which this particular payment will be accredited to."]
+    pub branch: Option<String>,
+
     #[doc = r"The billing address of the customer"]
     pub billing_address: BillingAddress,
 }
@@ -170,14 +217,12 @@ impl SubmitOrderBuilder<'_> {
     }
 }
 
-impl<'pesa> SubmitOrder<'pesa> {
+impl SubmitOrder<'_> {
     /// This initializes the SubmitOrder with the client and returns a builder
-    pub fn builder(client: &'pesa PesaPal) -> SubmitOrderBuilder<'pesa> {
+    pub(crate) fn builder(client: &PesaPal) -> SubmitOrderBuilder {
         SubmitOrderBuilder::default().client(client)
     }
-}
 
-impl SubmitOrder<'_> {
     /// # Submit Order Request
     ///
     /// Sends the Order for payment processing
@@ -192,6 +237,7 @@ impl SubmitOrder<'_> {
     /// [SubmitOrderError] - Incase the payment fails
     pub async fn send(self) -> PesaPalResult<SubmitOrderResponse> {
         let url = format!("{}/{SUBMIT_ORDER_REQUEST_URL}", self.client.env.base_url());
+
         let response = self
             .client
             .http_client

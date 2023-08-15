@@ -1,10 +1,12 @@
 mod auth;
+pub mod refund;
 pub mod submit_order;
 
 use reqwest::Client as HttpClient;
 use serde_json::json;
 pub use submit_order::BillingAddress;
 
+use self::refund::{Refund, RefundBuilder};
 use self::submit_order::{SubmitOrder, SubmitOrderBuilder};
 use crate::environment::Environment;
 use crate::error::{PesaPalError, PesaPalResult};
@@ -35,8 +37,8 @@ impl<'pesa> PesaPal {
     /// # Example
     /// ```ignore
     /// let pesapal: PesaPal = Pesapal::new(
-    ///       consumer_key,
-    ///       consumer_secret,
+    ///       std::env("CONSUMER_KEY"),
+    ///       std::env("CONSUMER_SECRET"),
     ///       Environment::Production
     /// );
     /// ```
@@ -102,8 +104,8 @@ impl<'pesa> PesaPal {
     /// use pesapal_rs::pesapal::PesaPal;
     ///
     /// let pesapal: PesaPal = Pesapal::new(
-    ///       consumer_key,
-    ///       consumer_secret,
+    ///       env::var(consumer_key).unwrap(),
+    ///       env::var(consumer_secret),
     ///       Environment::Production
     /// );
     ///
@@ -114,11 +116,13 @@ impl<'pesa> PesaPal {
     ///     .description("Shopping")
     ///     .callback_url("https://example.com")
     ///     .cancellation_url("https://example.com")
-    ///     .notification_id("example")
+    ///     .notification_id("asd-egsf1-fdm-sdfs")
     ///     .billing_address(BillingAddress {
-    ///         email_address: Some("yasir@gmail.com".to_string()),
+    ///         email_address: Some("john@doe.com".to_string()),
     ///         ..Default::default()
     ///      })
+    ///     .branch("Example")
+    ///     .redirect_mode(RedirectMode::ParentWindow)
     ///     .build()
     ///     .unwrap();
     ///
@@ -127,5 +131,44 @@ impl<'pesa> PesaPal {
     /// ```
     pub fn submit_order(&'pesa self) -> SubmitOrderBuilder {
         SubmitOrder::builder(self)
+    }
+
+    /// # Refund Payment Builder
+    ///
+    /// Creates a [RefundBuilder] for creating a new refund
+    /// request.
+    ///
+    /// The builder is consumed, and returns a [Refund]
+    /// Which we can successfully send the request to start the refund
+    /// processing
+    ///
+    /// See more [here](https://developer.pesapal.com/how-to-integrate/e-commerce/api-30-json/refund-request)
+    ///
+    /// # Examples
+    ///
+    /// ```ignore
+    /// use pesapal_rs::pesapal::PesaPal;
+    ///
+    ///
+    /// let pesapal: PesaPal = Pesapal::new(
+    ///       env::var(consumer_key).unwrap(),
+    ///       env::var(consumer_secret),
+    ///       Environment::Production
+    /// );
+    ///
+    /// let order = pesapal
+    ///     .refund()
+    ///     .amount(2500)
+    ///     .remarks("Service not offered")
+    ///     .confirmation_code("AA22BB33CC")
+    ///     .username("John Doe")
+    ///     .build()
+    ///     .unwrap();
+    ///
+    /// let response: RefundResponse = order.send().await.unwrap();
+    ///
+    /// ```
+    pub fn refund(&'pesa self) -> RefundBuilder {
+        Refund::builder(self)
     }
 }

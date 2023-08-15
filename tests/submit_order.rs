@@ -1,6 +1,7 @@
 use dotenvy::dotenv;
-use pesapal_rs::environment::Environment;
-use pesapal_rs::pesapal::{BillingAddress, PesaPal};
+use pesapal::environment::Environment;
+use pesapal::pesapal::submit_order::RedirectMode;
+use pesapal::pesapal::{BillingAddress, PesaPal};
 
 #[tokio::test]
 async fn test_submit_order() {
@@ -20,10 +21,15 @@ async fn test_submit_order() {
         .callback_url("https://example.com")
         .cancellation_url("https://example.com")
         .notification_id("example")
+        .redirect_mode(RedirectMode::ParentWindow)
+        .branch("Branch")
         .billing_address(BillingAddress {
             email_address: Some("yasir@gmail.com".to_string()),
             ..Default::default()
         })
         .build()
+        .unwrap()
+        .send()
+        .await
         .unwrap();
 }

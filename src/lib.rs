@@ -13,7 +13,7 @@
 //!
 //! In your lib or binary crate:
 //! ```rs
-//! use pesapal_rs::PesaPal;
+//! use pesapal::PesaPal;
 //! ```
 //!
 //!## Usage
@@ -26,7 +26,7 @@
 //! These are the following ways you can instantiate `PesaPal`:
 //!
 //! ```rust,no_run
-//! use pesapal_rs::{PesaPal, Environment};
+//! use pesapal::{PesaPal, Environment};
 //! use std::env;
 //! use dotenvy::dotenv;
 //!
@@ -46,7 +46,7 @@
 //! stored in a `.env` or any other configuration file
 //!
 //! ```rust,no_run
-//! use pesapal_rs::{PesaPal, Environment};
+//! use pesapal::{PesaPal, Environment};
 //! use std::env;
 //! use dotenvy::dotenv;
 //! use std::str::FromStr;
@@ -66,7 +66,7 @@
 //! `CONSUMER_KEY` and `CONSUMER_SECRET` from the Pesapal
 //!
 //! ```rust,no_run
-//! use pesapal_rs::{PesaPal, Environment};
+//! use pesapal::{PesaPal, Environment};
 //! use std::env;
 //! use dotenvy::dotenv;
 //!
@@ -85,13 +85,15 @@
 //! ```
 //!
 //!### Services
-//! The following services are currently available from the `PesaPal` client as methods that return builders:
+//! The following services are currently available from the `PesaPal` client as
+//! methods that return builders:
+//!
 //! * Submit Order - Sends the payment request that needs to be processed
 //! ```rust,no_run
-//! use pesapal_rs::{PesaPal, Environment};
+//! use pesapal::{PesaPal, Environment};
 //! use std::env;
 //! use dotenvy::dotenv;
-//! use pesapal_rs::pesapal::BillingAddress;
+//! use pesapal::pesapal::BillingAddress;
 //!
 //! #[tokio::main]
 //! async fn main() {
@@ -109,6 +111,7 @@
 //!     .currency("KES")
 //!     .amount(2500)
 //!     .description("Shopping")
+//!     .branch("example")
 //!     .callback_url("https://example.com")
 //!     .cancellation_url("https://example.com")
 //!     .notification_id("example")
@@ -116,6 +119,7 @@
 //!         email_address: Some("yasir@gmail.com".to_string()),
 //!         ..Default::default()
 //!      })
+//!     .redirect_mode(RedirectMode::ParentWindow)
 //!     .build()
 //!     .unwrap();
 //!
@@ -125,6 +129,37 @@
 //! }
 //! ```
 //!
+//! * Refund - Sends refund request for a payment that was processed
+//! //! ```rust,no_run
+//! use pesapal::{PesaPal, Environment};
+//! use std::env;
+//! use dotenvy::dotenv;
+//!
+//! #[tokio::main]
+//! async fn main() {
+//!     dotenv().ok();
+//!
+//!
+//! let pesapal: PesaPal = PesaPal::new(
+//!         env::var("CONSUMER_KEY").unwrap(),
+//!         env::var("CONSUMER_SECRET").unwrap(),
+//!         Environment::Sandbox
+//! );
+//!
+//! let refund_request = pesapal
+//!     .refund()
+//!     .amount(2500)
+//!     .remarks("services not offered")
+//!     .confirmation_code("AA22BB33CC")
+//!     .username("John Doe")
+//!     .build()
+//!     .unwrap();
+//!
+//! let response = refund_request.send().await;
+//!
+//! assert!(response.is_ok())
+//! }
+//! ```
 //!
 //! More will be added progressively, pull requests welcome
 //!
@@ -145,4 +180,5 @@ pub mod pesapal;
 
 pub use environment::Environment;
 pub use error::{PesaPalError, PesaPalErrorResponse, PesaPalResult};
+pub use pesapal::refund::{Refund, RefundResponse};
 pub use pesapal::{BillingAddress, PesaPal};

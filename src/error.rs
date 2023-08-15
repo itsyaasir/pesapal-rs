@@ -10,6 +10,9 @@ pub enum PesaPalError {
 
     #[error("submit order failed :{0}")]
     SubmitOrderError(PesaPalErrorResponse),
+
+    #[error("refund request failed {0}")]
+    RefundError(String),
     #[error("reqwest error : {0}")]
     ReqwestError(String),
     #[error("unsupported environment {0}")]
