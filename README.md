@@ -1,11 +1,11 @@
-# PesaPal-rs
+# Pesapal
 
 [![Rust](https://github.com/itsyaasir/pesapal-rs/actions/workflows/general.yml/badge.svg)](https://github.com/itsyaasir/pesapal-rs/actions/workflows/general.yml)
 [![](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
 ## About
 
-An unofficial Rust wrapper around the [PesaPal API](https://developer.pesapal.com/) for accessing PesaPal services.
+A client side library written in rust for accessing [PesaPal API](https://developer.pesapal.com/) services.
 
 ## Install
 
@@ -13,7 +13,7 @@ An unofficial Rust wrapper around the [PesaPal API](https://developer.pesapal.co
 
 ```toml
 [dependencies]
-pesapal-rs = { git = "https://github.com/itsyaasir/pesapal-rs" }
+pesapal = { git = "https://github.com/itsyaasir/pesapal-rs" }
 ```
 
 ## Author

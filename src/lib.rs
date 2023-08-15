@@ -8,7 +8,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! pesapal-rs = { git = "https://github.ciom/itsyaasir/pesapal-rs", branch = "main"}
+//! pesapal = { git = "https://github.ciom/itsyaasir/pesapal-rs", branch = "main"}
 //! ```
 //!
 //! In your lib or binary crate:
@@ -130,7 +130,7 @@
 //! ```
 //!
 //! * Refund - Sends refund request for a payment that was processed
-//! //! ```rust,no_run
+//! ```rust,no_run
 //! use pesapal::{PesaPal, Environment};
 //! use std::env;
 //! use dotenvy::dotenv;
@@ -175,7 +175,7 @@
 
 pub mod environment;
 pub mod error;
-pub mod macros;
+mod macros;
 pub mod pesapal;
 
 pub use environment::Environment;
