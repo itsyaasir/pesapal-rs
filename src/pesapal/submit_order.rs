@@ -12,12 +12,13 @@
 
 use derive_builder::Builder;
 use serde::{Deserialize, Serialize};
+use serde_aux::prelude::deserialize_default_from_null;
 use uuid::Uuid;
 
 use super::PesaPal;
 use crate::error::{PesaPalError, PesaPalErrorResponse, PesaPalResult};
 
-pub const SUBMIT_ORDER_REQUEST_URL: &str = "api/Transactions/SubmitOrderRequest";
+const SUBMIT_ORDER_REQUEST_URL: &str = "api/Transactions/SubmitOrderRequest";
 
 /// Submit Order Request
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -157,6 +158,7 @@ pub struct SubmitOrderResponse {
     /// Redirect to this URl or load it within an iframe
     pub redirect_url: String,
     /// Error message
+    #[serde(deserialize_with = "deserialize_default_from_null")]
     pub error: Option<PesaPalErrorResponse>,
     /// Response Message
     pub status: String,
@@ -167,15 +169,15 @@ pub struct SubmitOrderResponse {
 #[builder(build_fn(validate = "Self::validate"))]
 pub struct SubmitOrder<'pesa> {
     #[builder(pattern = "owned")]
-    pub client: &'pesa PesaPal,
+    client: &'pesa PesaPal,
     #[builder(setter(into))]
     #[doc = r"Currency which is used to charge the customers"]
-    pub currency: String,
+    currency: String,
     #[doc = r"Amount to be processed"]
-    pub amount: u64,
+    amount: u64,
     #[builder(setter(into))]
     #[doc = r"Description of the order"]
-    pub description: String,
+    description: String,
     #[builder(default)]
     #[doc = r"Accepts values TOP_WINDOW or PARENT_WINDOW.
      If left blank, the default value used will be TOP_WINDOW.
@@ -184,24 +186,24 @@ pub struct SubmitOrder<'pesa> {
      - TOP_WINDOW returns to the topmost window in the hierarchy of
      windows.
      - PARENT_WINDOW returns the immediate parent of a window."]
-    pub redirect_mode: RedirectMode,
+    redirect_mode: RedirectMode,
     #[builder(setter(into))]
     #[doc = r"URL which PesaPal will re-direct for the payment processing"]
-    pub callback_url: String,
+    callback_url: String,
     #[builder(setter(into, strip_option), default)]
     #[doc = r"A valid URL which PesaPal will redirect client incase
     they cancel the payment"]
-    pub cancellation_url: Option<String>,
+    cancellation_url: Option<String>,
     #[builder(setter(into))]
     #[doc = r"This represents IPN URLs which Pesapal will send notifications
     after the payment have been processed"]
-    pub notification_id: String,
+    notification_id: String,
     #[builder(setter(into, strip_option), default)]
     #[doc = r"If your business has multiple stores / branches, you can define the name of the store / branch to which this particular payment will be accredited to."]
-    pub branch: Option<String>,
+    branch: Option<String>,
 
     #[doc = r"The billing address of the customer"]
-    pub billing_address: BillingAddress,
+    billing_address: BillingAddress,
 }
 
 impl SubmitOrderBuilder<'_> {
@@ -247,14 +249,7 @@ impl SubmitOrder<'_> {
             .send()
             .await?;
 
-        let response_json: serde_json::Value = response.json().await?;
-
-        if let Some(err) = response_json.get("error") {
-            let err: PesaPalErrorResponse = serde_json::from_value(err.clone())?;
-            return Err(PesaPalError::SubmitOrderError(err));
-        }
-
-        let res = serde_json::from_value(response_json)?;
+        let res = response.json().await?;
 
         Ok(res)
     }

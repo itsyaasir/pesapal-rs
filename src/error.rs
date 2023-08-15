@@ -13,6 +13,8 @@ pub enum PesaPalError {
 
     #[error("refund request failed {0}")]
     RefundError(String),
+    #[error("register IPN URL error")]
+    RegisterIPNError(PesaPalErrorResponse),
     #[error("reqwest error : {0}")]
     ReqwestError(String),
     #[error("unsupported environment {0}")]
@@ -21,8 +23,8 @@ pub enum PesaPalError {
     ValidationError(String),
 }
 
+/// Error response for the Pesapal API error
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize)]
-
 pub struct PesaPalErrorResponse {
     pub code: String,
     pub error_type: String,

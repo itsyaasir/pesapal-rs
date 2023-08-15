@@ -1,4 +1,5 @@
 mod auth;
+pub mod ipn;
 pub mod refund;
 pub mod submit_order;
 
@@ -6,6 +7,7 @@ use reqwest::Client as HttpClient;
 use serde_json::json;
 pub use submit_order::BillingAddress;
 
+use self::ipn::{RegisterIPN, RegisterIPNBuilder};
 use self::refund::{Refund, RefundBuilder};
 use self::submit_order::{SubmitOrder, SubmitOrderBuilder};
 use crate::environment::Environment;
@@ -31,7 +33,7 @@ pub struct PesaPal {
     pub(crate) http_client: HttpClient,
 }
 
-impl<'pesa> PesaPal {
+impl PesaPal {
     /// This function construct a new PesaPal Instance
     ///
     /// # Example
@@ -129,7 +131,7 @@ impl<'pesa> PesaPal {
     /// let response: SubmitOrderResponse = order.send().await.unwrap();
     ///
     /// ```
-    pub fn submit_order(&'pesa self) -> SubmitOrderBuilder {
+    pub fn submit_order(&self) -> SubmitOrderBuilder {
         SubmitOrder::builder(self)
     }
 
@@ -156,7 +158,7 @@ impl<'pesa> PesaPal {
     ///       Environment::Production
     /// );
     ///
-    /// let order = pesapal
+    /// let refund_order = pesapal
     ///     .refund()
     ///     .amount(2500)
     ///     .remarks("Service not offered")
@@ -165,10 +167,50 @@ impl<'pesa> PesaPal {
     ///     .build()
     ///     .unwrap();
     ///
-    /// let response: RefundResponse = order.send().await.unwrap();
+    /// let response: RefundResponse = refund_order.send().await.unwrap();
     ///
     /// ```
-    pub fn refund(&'pesa self) -> RefundBuilder {
+    pub fn refund(&self) -> RefundBuilder {
         Refund::builder(self)
+    }
+
+    /// Register IPN URL builder
+    ///
+    /// Creates a [RegisterIPNBuilder] which is used for registering URL which
+    /// Pesapal will send notification about the payment in real-time.
+    ///
+    /// When a payment is made against a transaction, Pesapal will trigger an
+    /// IPN call to the notification URL related to this transaction
+    ///
+    /// The notification allows you to be alerted in real-time
+    ///
+    /// The builder is consumed and returns a [RegisterIPN]
+    /// which can successfully start the registration of the IPN
+    /// URL
+    /// See more [here](https://developer.pesapal.com/how-to-integrate/e-commerce/api-30-json/registeripnurl)
+    ///
+    /// # Example
+    ///
+    /// ``` ignore
+    ///
+    /// use crate::pesapal::PesaPal
+    ///
+    /// let pesapal: PesaPal = Pesapal::new(
+    ///       env::var(consumer_key).unwrap(),
+    ///       env::var(consumer_secret),
+    ///       Environment::Production
+    /// );
+    ///
+    /// let register_ipn_response = pesapal
+    ///     .register_ipn_url()
+    ///     .url("https://example.com")
+    ///     .ipn_notification_type("GET")
+    ///     .build()
+    ///     .unwrap();
+    ///
+    /// let response: RegisterIPNResponse = register_ipn_response.send().await.
+    /// unwrap();
+    pub fn register_ipn_url(&self) -> RegisterIPNBuilder {
+        RegisterIPN::builder(self)
     }
 }

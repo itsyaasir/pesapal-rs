@@ -161,6 +161,36 @@
 //! }
 //! ```
 //!
+//! //! * Register IPN URL - Register IPN URL
+//! ```rust,no_run
+//! use pesapal::{PesaPal, Environment};
+//! use std::env;
+//! use dotenvy::dotenv;
+//!
+//! #[tokio::main]
+//! async fn main() {
+//!     dotenv().ok();
+//!
+//!
+//! let pesapal: PesaPal = PesaPal::new(
+//!         env::var("CONSUMER_KEY").unwrap(),
+//!         env::var("CONSUMER_SECRET").unwrap(),
+//!         Environment::Sandbox
+//! );
+//!
+//! let register_ipn_response = pesapal
+//!     .register_ipn_url()
+//!     .url("example")
+//!     .ipn_notification_type("GET")
+//!     .build()
+//!     .unwrap();
+//!
+//! let response = register_ipn_response.send().await;
+//!
+//! assert!(response.is_ok())
+//! }
+//! ```
+//!
 //! More will be added progressively, pull requests welcome
 //!
 //!## Author
@@ -182,3 +212,5 @@ pub use environment::Environment;
 pub use error::{PesaPalError, PesaPalErrorResponse, PesaPalResult};
 pub use pesapal::refund::{Refund, RefundResponse};
 pub use pesapal::{BillingAddress, PesaPal};
+
+pub use pesapal::ipn::{NotificationType, RegisterIPNResponse};

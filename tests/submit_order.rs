@@ -2,6 +2,7 @@ use dotenvy::dotenv;
 use pesapal::environment::Environment;
 use pesapal::pesapal::submit_order::RedirectMode;
 use pesapal::pesapal::{BillingAddress, PesaPal};
+use pesapal::NotificationType;
 
 #[tokio::test]
 async fn test_submit_order() {
@@ -13,6 +14,16 @@ async fn test_submit_order() {
         Environment::Sandbox,
     );
 
+    let response = client
+        .register_ipn_url()
+        .url("http://example.com")
+        .ipn_notification_type(NotificationType::Get)
+        .build()
+        .unwrap()
+        .send()
+        .await
+        .unwrap();
+
     client
         .submit_order()
         .currency("KES")
@@ -20,7 +31,7 @@ async fn test_submit_order() {
         .description("Shopping")
         .callback_url("https://example.com")
         .cancellation_url("https://example.com")
-        .notification_id("example")
+        .notification_id(response.ipn_id)
         .redirect_mode(RedirectMode::ParentWindow)
         .branch("Branch")
         .billing_address(BillingAddress {

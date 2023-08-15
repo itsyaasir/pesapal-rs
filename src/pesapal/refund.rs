@@ -56,23 +56,23 @@ impl From<Refund<'_>> for RefundRequest {
 #[derive(Builder, Debug)]
 pub struct Refund<'pesa> {
     #[builder(pattern = "owned")]
-    pub client: &'pesa PesaPal,
+    client: &'pesa PesaPal,
     #[builder(setter(into))]
     #[doc = "This refers to payment confirmation code that was returned by the payment processor"]
-    pub confirmation_code: String,
+    confirmation_code: String,
     #[builder(setter(into))]
     #[doc = "Amount to be refunded."]
-    pub amount: f64,
+    amount: f64,
     #[builder(setter(into))]
     #[doc = "Identity of the user who has initiated the refund."]
-    pub username: String,
+    username: String,
     #[builder(setter(into))]
     #[doc = "A brief description on the reason for the refund."]
-    pub remarks: String,
+    remarks: String,
 }
 
 impl Refund<'_> {
-    /// Initializer the builder for the Refund process
+    /// Initializes the builder for the Refund process
     pub(crate) fn builder(client: &PesaPal) -> RefundBuilder {
         RefundBuilder::default().client(client)
     }
