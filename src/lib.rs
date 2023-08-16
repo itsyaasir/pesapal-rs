@@ -230,15 +230,13 @@ pub mod error;
 mod macros;
 pub mod pesapal;
 
-pub use crate::pesapal::refund::{Refund, RefundResponse};
-pub use crate::pesapal::PesaPal;
 pub use environment::Environment;
 pub use error::{PesaPalError, PesaPalErrorResponse, PesaPalResult};
 
+pub use crate::pesapal::list_ipn::{IPNList, IPNListResponse};
+pub use crate::pesapal::refund::{Refund, RefundResponse};
 pub use crate::pesapal::register_ipn::{NotificationType, RegisterIPNResponse};
-
 pub use crate::pesapal::submit_order::{
     BillingAddress, RedirectMode, SubmitOrder, SubmitOrderResponse,
 };
-
-pub use crate::pesapal::list_ipn::{IPNList, IPNListResponse};
+pub use crate::pesapal::PesaPal;

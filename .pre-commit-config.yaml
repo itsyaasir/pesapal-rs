@@ -1,15 +1,19 @@
 fail_fast: true
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.0.1
+    rev: v4.4.0
     hooks:
       - id: check-toml
+      - id: check-added-large-files
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: detect-private-key
 
   - repo: local
     hooks:
       - id: run-cargo-fmt
         name: Cargo fmt
-        entry: /bin/bash -c "cargo fmt --all -- --check"
+        entry: /bin/bash -c "cargo +nightly fmt --all -- --check"
         language: script
         files: ^.*\.rs$
         always_run: true
@@ -22,6 +26,12 @@ repos:
       - id: run-cargo-test
         name: Cargo test
         entry: /bin/bash -c "cargo test --no-fail-fast"
+        language: script
+        files: ^.*\.rs$
+        always_run: true
+      - id: run-cargo-audit
+        name: Cargo audit
+        entry: /bin/bash -c "cargo audit"
         language: script
         files: ^.*\.rs$
         always_run: true
