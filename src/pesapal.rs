@@ -1,14 +1,16 @@
 mod auth;
-pub mod ipn;
+pub mod list_ipn;
 pub mod refund;
+pub mod register_ipn;
 pub mod submit_order;
 
 use reqwest::Client as HttpClient;
 use serde_json::json;
 pub use submit_order::BillingAddress;
 
-use self::ipn::{RegisterIPN, RegisterIPNBuilder};
+use self::list_ipn::ListIPN;
 use self::refund::{Refund, RefundBuilder};
+use self::register_ipn::{RegisterIPN, RegisterIPNBuilder};
 use self::submit_order::{SubmitOrder, SubmitOrderBuilder};
 use crate::environment::Environment;
 use crate::error::{PesaPalError, PesaPalResult};
@@ -39,8 +41,8 @@ impl PesaPal {
     /// # Example
     /// ```ignore
     /// let pesapal: PesaPal = Pesapal::new(
-    ///       std::env("CONSUMER_KEY"),
-    ///       std::env("CONSUMER_SECRET"),
+    ///       std::env("CONSUMER_KEY").unwrap(),
+    ///       std::env("CONSUMER_SECRET").unwrap(),
     ///       Environment::Production
     /// );
     /// ```
@@ -107,7 +109,7 @@ impl PesaPal {
     ///
     /// let pesapal: PesaPal = Pesapal::new(
     ///       env::var(consumer_key).unwrap(),
-    ///       env::var(consumer_secret),
+    ///       env::var(consumer_secret).unwrap(),
     ///       Environment::Production
     /// );
     ///
@@ -154,7 +156,7 @@ impl PesaPal {
     ///
     /// let pesapal: PesaPal = Pesapal::new(
     ///       env::var(consumer_key).unwrap(),
-    ///       env::var(consumer_secret),
+    ///       env::var(consumer_secret).unwrap(),
     ///       Environment::Production
     /// );
     ///
@@ -193,11 +195,11 @@ impl PesaPal {
     ///
     /// ``` ignore
     ///
-    /// use crate::pesapal::PesaPal
+    /// use crate::pesapal::PesaPal;
     ///
     /// let pesapal: PesaPal = Pesapal::new(
     ///       env::var(consumer_key).unwrap(),
-    ///       env::var(consumer_secret),
+    ///       env::var(consumer_secret).unwrap(),
     ///       Environment::Production
     /// );
     ///
@@ -212,5 +214,41 @@ impl PesaPal {
     /// unwrap();
     pub fn register_ipn_url(&self) -> RegisterIPNBuilder {
         RegisterIPN::builder(self)
+    }
+
+    /// List IPN URL builder
+    ///
+    /// Creates a [ListIPN] which is used for listing all the IPN URLs
+    /// registered for the merchant.
+    ///
+    /// The builder is consumed and returns a [ListIPN]
+    /// which can successfully start the listing of the IPN
+    /// URLs
+    ///
+    /// See more [here](https://developer.pesapal.com/how-to-integrate/e-commerce/api-30-json/getregisteredipn)
+    ///
+    /// # Example
+    ///
+    /// ``` ignore
+    ///
+    /// use crate::pesapal::PesaPal;
+    ///
+    /// let pesapal: PesaPal = Pesapal::new(
+    ///      env::var(consumer_key).unwrap(),
+    ///      env::var(consumer_secret).unwrap(),
+    ///      Environment::Production
+    /// );
+    ///
+    /// let list_ipn_response = pesapal
+    ///    .list_ipn_urls()
+    ///    .send()
+    ///    .await
+    ///    .unwrap();
+    ///
+    /// let response: IPNListResponse = list_ipn_response.send().await.unwrap();
+    ///
+    /// ```
+    pub fn list_ipn_urls(&self) -> ListIPN {
+        ListIPN::new(self)
     }
 }

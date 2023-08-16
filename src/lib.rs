@@ -193,6 +193,26 @@
 //! }
 //! ```
 //!
+//! * List IPN URL - List IPN URL
+//! ```rust,no_run
+//! use pesapal::{PesaPal, Environment};
+//! use std::env;
+//! use dotenvy::dotenv;
+//! use pesapal::pesapal::list_ipn::IPNListResponse;
+//!
+//! #[tokio::main]
+//! async fn main() {
+//!    dotenv().ok();
+//!
+//!   let pesapal: PesaPal = PesaPal::new(
+//!        env::var("CONSUMER_KEY").unwrap(),
+//!        env::var("CONSUMER_SECRET").unwrap(),
+//!        Environment::Sandbox
+//!  );
+//!
+//! let response: IPNListResponse = pesapal.list_ipn_urls().send().await.unwrap();
+//! }
+//! ```
 //! More will be added progressively, pull requests welcome
 //!
 //!## Author
@@ -211,8 +231,14 @@ mod macros;
 pub mod pesapal;
 
 pub use crate::pesapal::refund::{Refund, RefundResponse};
-pub use crate::pesapal::{BillingAddress, PesaPal};
+pub use crate::pesapal::PesaPal;
 pub use environment::Environment;
 pub use error::{PesaPalError, PesaPalErrorResponse, PesaPalResult};
 
-pub use crate::pesapal::ipn::{NotificationType, RegisterIPNResponse};
+pub use crate::pesapal::register_ipn::{NotificationType, RegisterIPNResponse};
+
+pub use crate::pesapal::submit_order::{
+    BillingAddress, RedirectMode, SubmitOrder, SubmitOrderResponse,
+};
+
+pub use crate::pesapal::list_ipn::{IPNList, IPNListResponse};
