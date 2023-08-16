@@ -94,6 +94,7 @@
 //! use std::env;
 //! use dotenvy::dotenv;
 //! use pesapal::pesapal::BillingAddress;
+//! use pesapal::pesapal::submit_order::RedirectMode;
 //!
 //! #[tokio::main]
 //! async fn main() {
@@ -166,6 +167,7 @@
 //! use pesapal::{PesaPal, Environment};
 //! use std::env;
 //! use dotenvy::dotenv;
+//! use pesapal::NotificationType;
 //!
 //! #[tokio::main]
 //! async fn main() {
@@ -181,7 +183,7 @@
 //! let register_ipn_response = pesapal
 //!     .register_ipn_url()
 //!     .url("example")
-//!     .ipn_notification_type("GET")
+//!     .ipn_notification_type(NotificationType::Get)
 //!     .build()
 //!     .unwrap();
 //!
@@ -208,9 +210,9 @@ pub mod error;
 mod macros;
 pub mod pesapal;
 
+pub use crate::pesapal::refund::{Refund, RefundResponse};
+pub use crate::pesapal::{BillingAddress, PesaPal};
 pub use environment::Environment;
 pub use error::{PesaPalError, PesaPalErrorResponse, PesaPalResult};
-pub use pesapal::refund::{Refund, RefundResponse};
-pub use pesapal::{BillingAddress, PesaPal};
 
-pub use pesapal::ipn::{NotificationType, RegisterIPNResponse};
+pub use crate::pesapal::ipn::{NotificationType, RegisterIPNResponse};

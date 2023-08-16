@@ -30,7 +30,7 @@ need_stdout = false
 [jobs.doc-open]
 command = ["cargo", "doc", "--color", "always", "--no-deps", "--open"]
 need_stdout = false
-on_success = "back" # so that we don't open the browser at each change
+on_success = "back"                                                    # so that we don't open the browser at each change
 
 # You can run your application and have the result displayed in bacon,
 # *if* it makes sense for this crate. You can run an example the same
@@ -39,7 +39,7 @@ on_success = "back" # so that we don't open the browser at each change
 # If you want to pass options to your program, a `--` separator
 # will be needed.
 [jobs.run]
-command = [ "cargo", "run", "--color", "always" ]
+command = ["cargo", "run", "--color", "always"]
 need_stdout = true
 allow_warnings = true
 
@@ -48,4 +48,10 @@ allow_warnings = true
 # Shortcuts to internal functions (scrolling, toggling, etc.)
 # should go in your personal global prefs.toml file instead.
 [keybindings]
-# alt-m = "job:my-job"
+d = "job:doc"
+shift-d = "job:doc-open"
+c = "job:check"
+shift-c = "job:check-all"
+t = "job:test"
+r = "job:run"
+p = "job:clippy"

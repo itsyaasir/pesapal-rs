@@ -133,6 +133,10 @@ impl RegisterIPN<'_> {
 
         let res: RegisterIPNResponse = response.json().await?;
 
+        if let Some(error) = res.error {
+            return Err(PesaPalError::RegisterIPNError(error));
+        }
+
         Ok(res)
     }
 }

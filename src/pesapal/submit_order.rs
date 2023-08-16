@@ -249,7 +249,11 @@ impl SubmitOrder<'_> {
             .send()
             .await?;
 
-        let res = response.json().await?;
+        let res: SubmitOrderResponse = response.json().await?;
+
+        if let Some(error) = res.error {
+            return Err(PesaPalError::SubmitOrderError(error));
+        }
 
         Ok(res)
     }
