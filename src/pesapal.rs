@@ -3,6 +3,7 @@ pub mod list_ipn;
 pub mod refund;
 pub mod register_ipn;
 pub mod submit_order;
+mod transaction_status;
 
 use reqwest::Client as HttpClient;
 use serde_json::json;
@@ -12,6 +13,7 @@ use self::list_ipn::ListIPN;
 use self::refund::{Refund, RefundBuilder};
 use self::register_ipn::{RegisterIPN, RegisterIPNBuilder};
 use self::submit_order::{SubmitOrder, SubmitOrderBuilder};
+use self::transaction_status::{TransactionStatus, TransactionStatusBuilder};
 use crate::environment::Environment;
 use crate::error::{PesaPalError, PesaPalResult};
 use crate::pesapal::auth::AuthenticationResponse;
@@ -250,5 +252,9 @@ impl PesaPal {
     /// ```
     pub fn list_ipn_urls(&self) -> ListIPN {
         ListIPN::new(self)
+    }
+
+    pub fn transaction_status(&self) -> TransactionStatusBuilder {
+        TransactionStatusBuilder::default().client(&self)
     }
 }
