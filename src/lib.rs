@@ -161,7 +161,7 @@
 //! }
 //! ```
 //!
-//! //! * Register IPN URL - Register IPN URL
+//! * Register IPN URL - Register IPN URL
 //! ```rust,no_run
 //! use pesapal::{PesaPal, Environment};
 //! use std::env;
