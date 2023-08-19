@@ -119,7 +119,7 @@ impl RegisterIPN<'_> {
     ///
     /// ## Errors
     ///
-    /// [RegisterIPNError] - Incase the registration fails
+    /// [PesaPalError::RegisterIPNError] - Incase the registration fails
     pub async fn send(self) -> PesaPalResult<RegisterIPNResponse> {
         let url = format!("{}/{REGISTER_IPN_URL}", self.client.env.base_url());
 

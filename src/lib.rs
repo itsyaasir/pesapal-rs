@@ -213,6 +213,36 @@
 //! let response: IPNListResponse = pesapal.list_ipn_urls().send().await.unwrap();
 //! }
 //! ```
+//!
+//! * Transaction Status - Transaction Status
+//! ```rust,no_run
+//! use pesapal::{PesaPal, Environment};
+//! use std::env;
+//! use dotenvy::dotenv;
+//! use pesapal::pesapal::transaction_status::TransactionStatusResponse;
+//!
+//! #[tokio::main]
+//! async fn main() {
+//!    dotenv().ok();
+//!
+//!  let pesapal: PesaPal = PesaPal::new(
+//!       env::var("CONSUMER_KEY").unwrap(),
+//!      env::var("CONSUMER_SECRET").unwrap(),
+//!     Environment::Sandbox
+//! );
+//!
+//! let response: TransactionStatusResponse = pesapal
+//!    .transaction_status()
+//!     .order_tracking_id("example")
+//!     .build()
+//!     .unwrap()
+//!     .send()
+//!     .await
+//!     .unwrap();
+//!
+//! }
+//! ```
+//!
 //! More will be added progressively, pull requests welcome
 //!
 //!## Author
@@ -225,18 +255,21 @@
 //!## License
 //! This project is MIT licensed
 
-pub mod environment;
-pub mod error;
+mod environment;
+mod error;
 mod macros;
-pub mod pesapal;
+mod pesapal;
 
 pub use environment::Environment;
 pub use error::{PesaPalError, PesaPalErrorResponse, PesaPalResult};
 
-pub use crate::pesapal::list_ipn::{IPNList, IPNListResponse};
-pub use crate::pesapal::refund::{Refund, RefundResponse};
-pub use crate::pesapal::register_ipn::{NotificationType, RegisterIPNResponse};
+pub use crate::pesapal::list_ipn::{IPNList, IPNListResponse, ListIPN};
+pub use crate::pesapal::refund::{Refund, RefundRequest, RefundResponse};
+pub use crate::pesapal::register_ipn::{NotificationType, RegisterIPN, RegisterIPNResponse};
 pub use crate::pesapal::submit_order::{
-    BillingAddress, RedirectMode, SubmitOrder, SubmitOrderResponse,
+    BillingAddress, RedirectMode, SubmitOrder, SubmitOrderRequest, SubmitOrderResponse,
+};
+pub use crate::pesapal::transaction_status::{
+    StatusCode, TransactionStatus, TransactionStatusResponse,
 };
 pub use crate::pesapal::PesaPal;

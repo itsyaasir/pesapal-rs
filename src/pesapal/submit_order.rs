@@ -236,7 +236,7 @@ impl SubmitOrder<'_> {
     ///
     /// ## Errors
     ///
-    /// [SubmitOrderError] - Incase the payment fails
+    /// [PesaPalError::SubmitOrderError] - Incase the payment fails
     pub async fn send(self) -> PesaPalResult<SubmitOrderResponse> {
         let url = format!("{}/{SUBMIT_ORDER_REQUEST_URL}", self.client.env.base_url());
 

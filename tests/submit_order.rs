@@ -1,8 +1,5 @@
 use dotenvy::dotenv;
-use pesapal::environment::Environment;
-use pesapal::pesapal::submit_order::RedirectMode;
-use pesapal::pesapal::{BillingAddress, PesaPal};
-use pesapal::NotificationType;
+use pesapal::{BillingAddress, Environment, NotificationType, PesaPal, RedirectMode};
 
 #[tokio::test]
 async fn test_submit_order() {
