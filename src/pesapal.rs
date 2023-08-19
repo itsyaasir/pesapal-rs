@@ -3,7 +3,7 @@ pub mod list_ipn;
 pub mod refund;
 pub mod register_ipn;
 pub mod submit_order;
-mod transaction_status;
+pub mod transaction_status;
 
 use reqwest::Client as HttpClient;
 use serde_json::json;
@@ -241,20 +241,50 @@ impl PesaPal {
     ///      Environment::Production
     /// );
     ///
-    /// let list_ipn_response = pesapal
+    /// let list_ipn_response: IPNListResponse = pesapal
     ///    .list_ipn_urls()
     ///    .send()
     ///    .await
     ///    .unwrap();
-    ///
-    /// let response: IPNListResponse = list_ipn_response.send().await.unwrap();
     ///
     /// ```
     pub fn list_ipn_urls(&self) -> ListIPN {
         ListIPN::new(self)
     }
 
+    /// Transaction Status builder
+    ///
+    /// Creates a [TransactionStatusBuilder] which is used for checking the
+    /// status of a transaction
+    ///
+    /// The builder is consumed and returns a [TransactionStatus]
+    /// which can successfully start the checking of the transaction status
+    ///
+    /// See more [here](https://developer.pesapal.com/how-to-integrate/e-commerce/api-30-json/gettransactionstatus)
+    ///
+    /// # Example
+    ///
+    /// ``` ignore
+    ///
+    /// use crate::pesapal::PesaPal;
+    ///
+    /// let pesapal: PesaPal = Pesapal::new(
+    ///     env::var(consumer_key).unwrap(),
+    ///     env::var(consumer_secret).unwrap(),
+    ///     Environment::Production
+    /// );
+    ///
+    /// let transaction_status_response: TransactionStatusResponse = pesapal
+    ///    .transaction_status()
+    ///    .order_tracking_id("asdasd")
+    ///     .build()
+    ///     .unwrap()
+    ///     .send()
+    ///     .await
+    ///     .unwrap();
+    ///
+    /// ```
     pub fn transaction_status(&self) -> TransactionStatusBuilder {
-        TransactionStatusBuilder::default().client(&self)
+        TransactionStatus::builder(self)
     }
 }

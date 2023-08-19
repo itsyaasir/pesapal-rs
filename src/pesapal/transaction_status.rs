@@ -4,15 +4,15 @@
 //! OrderTrackingId.
 
 use derive_builder::Builder;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 const TRANSACTION_STATUS_URL: &str = "api/Transactions/GetTransactionStatus";
 
 use serde_aux::prelude::deserialize_number_from_string;
-use serde_json::Value;
 use serde_repr::Deserialize_repr;
 
-use crate::{PesaPal, PesaPalResult};
+use crate::error::TransactionStatusError;
+use crate::{PesaPal, PesaPalError, PesaPalResult};
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -28,17 +28,31 @@ pub struct TransactionStatusResponse {
     pub confirmation_code: String,
     /// Contains the status of the transaction
     pub payment_status_description: StatusCode,
+    /// This is the description of the payment status.
     pub description: String,
+    /// This message shows if the transaction was successful or not.
     pub message: String,
+    /// Masked card/payment account number used by the customer to make
     pub payment_account: String,
+    /// A valid URL which pesapal will redirect your customer to after
+    /// payment. This is the URL you provided when you initiated the payment.
     pub call_back_url: String,
+    /// Pesapal status code representing the status of the transaction.
+    /// 0 = Invalid
+    /// 1 = Completed
+    /// 2 = Failed
+    /// 3 = Reversed
     pub status_code: StatusCode,
+    /// Your application's unique ID as received in the SubmitOrderRequest call.
     pub merchant_reference: String,
-    pub payment_status_code: String,
+    ///Currency the payment was made in. ISO Currency Codes.
     pub currency: String,
-    pub error: Error,
+    /// An error object containing error_type, code, message and call_back_url.
+    pub error: TransactionStatusError,
+    /// HTTP status code as defined on RFC 2616. A status of 200 means the
+    /// request was successful.
     #[serde(deserialize_with = "deserialize_number_from_string")]
-    pub status: String,
+    pub status: u16,
 }
 #[derive(Debug, Deserialize_repr)]
 #[repr(u8)]
@@ -51,15 +65,24 @@ pub enum StatusCode {
     Reversed = 3,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Error {
-    #[serde(rename = "error_type")]
-    pub error_type: Value,
-    pub code: Value,
-    pub message: Value,
-    #[serde(rename = "call_back_url")]
-    pub call_back_url: Value,
+impl TryFrom<u8> for StatusCode {
+    type Error = PesaPalError;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        match value {
+            0 => Ok(StatusCode::Invalid),
+            1 => Ok(StatusCode::Completed),
+            2 => Ok(StatusCode::Failed),
+            3 => Ok(StatusCode::Reversed),
+            _ => Err(PesaPalError::Internal("Invalid status code".to_string())),
+        }
+    }
+}
+
+impl From<StatusCode> for u8 {
+    fn from(status: StatusCode) -> Self {
+        status as u8
+    }
 }
 
 #[derive(Debug, Builder)]
@@ -78,6 +101,18 @@ impl<'pesa> TransactionStatus<'pesa> {
         TransactionStatusBuilder::default().client(client)
     }
 
+    /// # Sends a Transaction Status Request
+    ///
+    /// Sends a transaction status request to Pesapal
+    ///
+    /// ## Returns
+    ///
+    /// Returns a [TransactionStatusResponse] if the request was successful
+    ///
+    /// ## Errors
+    ///
+    /// [PesaPalError::TransactionStatusError] - with status 500 and error
+    /// message incase the refund
     pub async fn send(&self) -> PesaPalResult<TransactionStatusResponse> {
         let url = format!("{}/{TRANSACTION_STATUS_URL}", self.client.env.base_url());
 
@@ -90,6 +125,12 @@ impl<'pesa> TransactionStatus<'pesa> {
             .send()
             .await?;
 
-        panic!()
+        let res: TransactionStatusResponse = response.json().await?;
+
+        if res.status != 200 {
+            return Err(PesaPalError::TransactionStatusError(res.error));
+        }
+
+        Ok(res)
     }
 }

@@ -1,7 +1,5 @@
 use dotenvy::dotenv;
-use pesapal::environment::Environment;
-use pesapal::pesapal::submit_order::RedirectMode;
-use pesapal::pesapal::{BillingAddress, PesaPal};
+use pesapal::prelude::*;
 use pesapal::NotificationType;
 
 #[tokio::test]

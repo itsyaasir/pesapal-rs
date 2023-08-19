@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-#[derive(Debug, Clone, thiserror::Error)]
+#[derive(Debug, thiserror::Error)]
 #[non_exhaustive]
 pub enum PesaPalError {
     #[error("internal error occurred : {0}")]
@@ -15,8 +15,10 @@ pub enum PesaPalError {
     RefundError(String),
     #[error("register IPN URL error")]
     RegisterIPNError(PesaPalErrorResponse),
-    #[error("reqwest error : {0}")]
-    ReqwestError(String),
+    #[error("transaction status error : {0:?}")]
+    TransactionStatusError(TransactionStatusError),
+    #[error(transparent)]
+    ReqwestError(#[from] reqwest::Error),
     #[error("unsupported environment {0}")]
     UnsupportedEnvironment(String),
     #[error("validation error")]
@@ -43,14 +45,16 @@ impl std::fmt::Display for PesaPalErrorResponse {
 /// Type alias for the result
 pub type PesaPalResult<T> = Result<T, PesaPalError>;
 
-impl From<reqwest::Error> for PesaPalError {
-    fn from(value: reqwest::Error) -> Self {
-        Self::ReqwestError(value.to_string())
-    }
-}
-
 impl From<serde_json::Error> for PesaPalError {
     fn from(value: serde_json::Error) -> Self {
         Self::Internal(value.to_string())
     }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct TransactionStatusError {
+    pub error_type: String,
+    pub code: String,
+    pub message: String,
+    pub call_back_url: String,
 }
