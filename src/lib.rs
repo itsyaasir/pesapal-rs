@@ -260,17 +260,16 @@ mod error;
 mod macros;
 mod pesapal;
 
-pub mod prelude {
-    pub use crate::environment::Environment;
-    pub use crate::error::{PesaPalError, PesaPalErrorResponse, PesaPalResult};
-    pub use crate::pesapal::list_ipn::{IPNList, IPNListResponse};
-    pub use crate::pesapal::refund::{Refund, RefundResponse};
-    pub use crate::pesapal::register_ipn::{NotificationType, RegisterIPNResponse};
-    pub use crate::pesapal::submit_order::{
-        BillingAddress, RedirectMode, SubmitOrder, SubmitOrderResponse,
-    };
-    pub use crate::pesapal::transaction_status::{TransactionStatus, TransactionStatusResponse};
-    pub use crate::pesapal::PesaPal;
-}
+pub use environment::Environment;
+pub use error::{PesaPalError, PesaPalErrorResponse, PesaPalResult};
 
-pub use prelude::*;
+pub use crate::pesapal::list_ipn::{IPNList, IPNListResponse, ListIPN};
+pub use crate::pesapal::refund::{Refund, RefundRequest, RefundResponse};
+pub use crate::pesapal::register_ipn::{NotificationType, RegisterIPN, RegisterIPNResponse};
+pub use crate::pesapal::submit_order::{
+    BillingAddress, RedirectMode, SubmitOrder, SubmitOrderRequest, SubmitOrderResponse,
+};
+pub use crate::pesapal::transaction_status::{
+    StatusCode, TransactionStatus, TransactionStatusResponse,
+};
+pub use crate::pesapal::PesaPal;

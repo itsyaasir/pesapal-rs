@@ -1,6 +1,5 @@
 use dotenvy::dotenv;
-use pesapal::prelude::*;
-use pesapal::NotificationType;
+use pesapal::{BillingAddress, Environment, NotificationType, PesaPal, RedirectMode};
 
 #[tokio::test]
 async fn test_submit_order() {
