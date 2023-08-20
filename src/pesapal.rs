@@ -1,4 +1,4 @@
-mod auth;
+pub mod auth;
 pub mod list_ipn;
 pub mod refund;
 pub mod register_ipn;
