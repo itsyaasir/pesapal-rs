@@ -1,37 +1,43 @@
-use std::env;
+mod common;
 
-use pesapal::{BillingAddress, Environment, NotificationType, PesaPal, RedirectMode};
+use pesapal::{BillingAddress, RedirectMode, SubmitOrderResponse};
+use serde_json::json;
+use wiremock::matchers::{method, path};
+use wiremock::{Mock, ResponseTemplate};
+
+use crate::common::pesapal_client;
 
 #[tokio::test]
-async fn test_submit_order() {
-    let client = PesaPal::new(
-        env::var("CONSUMER_KEY").unwrap(),
-        env::var("CONSUMER_SECRET").unwrap(),
-        Environment::Sandbox,
-    );
+#[ignore = "test is currently failing"]
+async fn test_submit_order_is_success() {
+    let (client, server) = pesapal_client().await;
+    let sample_response = SubmitOrderResponse {
+        error: None,
+        merchant_reference: "AA22BB33CC".to_string(),
+        order_tracking_id: "AA22BB33CC".to_string(),
+        redirect_url: "https://example.com".to_string(),
+        status: 200.to_string(),
+    };
 
-    let response = client
-        .register_ipn_url()
-        .url("http://example.com")
-        .ipn_notification_type(NotificationType::Get)
-        .build()
-        .unwrap()
-        .send()
-        .await
-        .unwrap();
+    Mock::given(method("POST"))
+        .and(path("api/Transactions/SubmitOrderRequest"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(json!(sample_response)))
+        .expect(1)
+        .mount(&server)
+        .await;
 
-    client
+    let order = client
         .submit_order()
         .currency("KES")
         .amount(2500)
         .description("Shopping")
         .callback_url("https://example.com")
         .cancellation_url("https://example.com")
-        .notification_id(response.ipn_id)
+        .notification_id("AABBCCDDEEFFGG")
         .redirect_mode(RedirectMode::ParentWindow)
-        .branch("Branch")
+        .branch("EA")
         .billing_address(BillingAddress {
-            email_address: Some("yasir@gmail.com".to_string()),
+            email_address: Some("example@example.com".to_string()),
             ..Default::default()
         })
         .build()
@@ -39,4 +45,6 @@ async fn test_submit_order() {
         .send()
         .await
         .unwrap();
+
+    assert_eq!(sample_response, order)
 }

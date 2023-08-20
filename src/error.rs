@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, thiserror::Error)]
 #[non_exhaustive]
@@ -26,7 +26,7 @@ pub enum PesaPalError {
 }
 
 /// Error response for the Pesapal API error
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[non_exhaustive]
 pub struct PesaPalErrorResponse {
     pub code: String,

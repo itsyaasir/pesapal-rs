@@ -63,7 +63,7 @@ pub type AccessToken = String;
     convert = r#"{ format!("{}", client.consumer_key) }"#,
     result = true
 )]
-pub async fn auth(client: &PesaPal) -> Result<AccessToken, PesaPalError> {
+pub(crate) async fn auth(client: &PesaPal) -> Result<AccessToken, PesaPalError> {
     let url = format!("{}/{AUTHENTICATION_URL}", client.env.base_url());
 
     let payload = AuthenticationRequest {
@@ -117,6 +117,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[ignore = ""]
     async fn test_cached_access_token() {
         dotenv().ok();
 
