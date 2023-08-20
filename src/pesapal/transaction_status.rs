@@ -1,7 +1,7 @@
 //! Get transaction status
 //! Once Pesapal redirect your customer to your callback URL and triggers your
 //! IPN URL, you need to check the status of the payment using the
-//! OrderTrackingId.
+//! `OrderTrackingId`.
 
 use derive_builder::Builder;
 use serde::Deserialize;
@@ -54,6 +54,7 @@ pub struct TransactionStatusResponse {
     #[serde(deserialize_with = "deserialize_number_from_string")]
     pub status: u16,
 }
+
 #[derive(Debug, Deserialize_repr)]
 #[repr(u8)]
 #[serde(rename_all = "UPPERCASE")]
@@ -70,10 +71,10 @@ impl TryFrom<u8> for StatusCode {
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
         match value {
-            0 => Ok(StatusCode::Invalid),
-            1 => Ok(StatusCode::Completed),
-            2 => Ok(StatusCode::Failed),
-            3 => Ok(StatusCode::Reversed),
+            0 => Ok(Self::Invalid),
+            1 => Ok(Self::Completed),
+            2 => Ok(Self::Failed),
+            3 => Ok(Self::Reversed),
             _ => Err(PesaPalError::Internal("Invalid status code".to_string())),
         }
     }
@@ -81,7 +82,7 @@ impl TryFrom<u8> for StatusCode {
 
 impl From<StatusCode> for u8 {
     fn from(status: StatusCode) -> Self {
-        status as u8
+        status as Self
     }
 }
 
@@ -96,7 +97,7 @@ pub struct TransactionStatus<'pesa> {
 }
 
 impl<'pesa> TransactionStatus<'pesa> {
-    /// Initiates a new [TransactionStatusBuilder]
+    /// Initiates a new [`TransactionStatusBuilder`]
     pub(crate) fn builder(client: &'pesa PesaPal) -> TransactionStatusBuilder {
         TransactionStatusBuilder::default().client(client)
     }
@@ -107,11 +108,11 @@ impl<'pesa> TransactionStatus<'pesa> {
     ///
     /// ## Returns
     ///
-    /// Returns a [TransactionStatusResponse] if the request was successful
+    /// Returns a [`TransactionStatusResponse`] if the request was successful
     ///
     /// ## Errors
     ///
-    /// [PesaPalError::TransactionStatusError] - with status 500 and error
+    /// [`PesaPalError::TransactionStatusError`] - with status 500 and error
     /// message incase the refund
     pub async fn send(&self) -> PesaPalResult<TransactionStatusResponse> {
         let url = format!("{}/{TRANSACTION_STATUS_URL}", self.client.env.base_url());
@@ -120,7 +121,7 @@ impl<'pesa> TransactionStatus<'pesa> {
             .client
             .http_client
             .get(url)
-            .bearer_auth(&self.client.authenticate().await?.token)
+            .bearer_auth(&self.client.authenticate().await?)
             .query(&[("OrderTrackingId", &self.order_tracking_id)])
             .send()
             .await?;

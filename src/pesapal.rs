@@ -5,25 +5,25 @@ pub mod register_ipn;
 pub mod submit_order;
 pub mod transaction_status;
 
+use cached::Cached;
 use reqwest::Client as HttpClient;
-use serde_json::json;
 pub use submit_order::BillingAddress;
 
+use self::auth::{AccessToken, AUTH_CACHE};
 use self::list_ipn::ListIPN;
 use self::refund::{Refund, RefundBuilder};
 use self::register_ipn::{RegisterIPN, RegisterIPNBuilder};
 use self::submit_order::{SubmitOrder, SubmitOrderBuilder};
 use self::transaction_status::{TransactionStatus, TransactionStatusBuilder};
 use crate::environment::Environment;
-use crate::error::{PesaPalError, PesaPalResult};
-use crate::pesapal::auth::AuthenticationResponse;
+use crate::error::PesaPalResult;
 
-/// PesaPal package version
+/// `PesaPal` package version
 static PESAPAL_PACKAGE_VERSION: &str = env!("CARGO_PKG_VERSION");
 
-/// [PesaPal] This is the client struct which allows communication with
-/// the PesaPal services
-#[derive(Debug)]
+/// [`PesaPal`] This is the client struct which allows communication with
+/// the `PesaPal` services
+#[derive(Debug, Clone)]
 pub struct PesaPal {
     /// Consumer Key - This is provided by the PesaPal
     consumer_key: String,
@@ -38,7 +38,7 @@ pub struct PesaPal {
 }
 
 impl PesaPal {
-    /// This function construct a new PesaPal Instance
+    /// This function construct a new `PesaPal` Instance
     ///
     /// # Example
     /// ```ignore
@@ -75,30 +75,44 @@ impl PesaPal {
     /// endpoints.
     ///
     /// See more [here](https://developer.pesapal.com/how-to-integrate/e-commerce/api-30-json/authentication)
-    pub async fn authenticate(&self) -> PesaPalResult<AuthenticationResponse> {
-        let url = format!("{}/api/Auth/RequestToken", self.env.base_url());
-        let payload = json!({
-            "consumer_key":self.consumer_key,
-            "consumer_secret": self.consumer_secret
-        });
-
-        let response = self.http_client.post(url).json(&payload).send().await?;
-
-        if response.status().is_success() {
-            let value = response.json::<_>().await?;
-            return Ok(value);
+    ///
+    /// # Returns
+    /// [`AccessToken`] which contains the token
+    ///
+    /// # Errors
+    /// [`PesaPalError::AuthenticationError`] - Incase the authentication fails
+    pub async fn authenticate(&self) -> PesaPalResult<AccessToken> {
+        // Check if the access token is already cached
+        if let Some(token) = AUTH_CACHE.lock().await.cache_get(&self.consumer_key) {
+            return Ok(token.clone());
         }
 
-        let err = response.json().await?;
-        Err(PesaPalError::AuthenticationError(err))
+        // Generate a new access token
+        let new_token = match auth::auth_prime_cache(self).await {
+            Ok(token) => token,
+            Err(e) => return Err(e),
+        };
+
+        // Double-check if the access token is cached by another thread
+        if let Some(token) = AUTH_CACHE.lock().await.cache_get(&self.consumer_key) {
+            return Ok(token.clone());
+        }
+
+        // Cache the new token
+        AUTH_CACHE
+            .lock()
+            .await
+            .cache_set(self.consumer_key.clone(), new_token.clone());
+
+        Ok(new_token)
     }
 
     /// # Submit Order Builder
     ///
-    /// Creates a [SubmitOrderBuilder] for creating a new payment
+    /// Creates a [`SubmitOrderBuilder`] for creating a new payment
     /// request.
     ///
-    /// The builder is consumed, and returns a [SubmitOrder]
+    /// The builder is consumed, and returns a [`SubmitOrder`]
     /// Which we can successfully send the request to start the payment
     /// processing
     ///
@@ -135,13 +149,14 @@ impl PesaPal {
     /// let response: SubmitOrderResponse = order.send().await.unwrap();
     ///
     /// ```
+    #[must_use]
     pub fn submit_order(&self) -> SubmitOrderBuilder {
         SubmitOrder::builder(self)
     }
 
     /// # Refund Payment Builder
     ///
-    /// Creates a [RefundBuilder] for creating a new refund
+    /// Creates a [`RefundBuilder`] for creating a new refund
     /// request.
     ///
     /// The builder is consumed, and returns a [Refund]
@@ -174,13 +189,14 @@ impl PesaPal {
     /// let response: RefundResponse = refund_order.send().await.unwrap();
     ///
     /// ```
+    #[must_use]
     pub fn refund(&self) -> RefundBuilder {
         Refund::builder(self)
     }
 
     /// Register IPN URL builder
     ///
-    /// Creates a [RegisterIPNBuilder] which is used for registering URL which
+    /// Creates a [`RegisterIPNBuilder`] which is used for registering URL which
     /// Pesapal will send notification about the payment in real-time.
     ///
     /// When a payment is made against a transaction, Pesapal will trigger an
@@ -188,7 +204,7 @@ impl PesaPal {
     ///
     /// The notification allows you to be alerted in real-time
     ///
-    /// The builder is consumed and returns a [RegisterIPN]
+    /// The builder is consumed and returns a [`RegisterIPN`]
     /// which can successfully start the registration of the IPN
     /// URL
     /// See more [here](https://developer.pesapal.com/how-to-integrate/e-commerce/api-30-json/registeripnurl)
@@ -214,16 +230,17 @@ impl PesaPal {
     ///
     /// let response: RegisterIPNResponse = register_ipn_response.send().await.
     /// unwrap();
+    #[must_use]
     pub fn register_ipn_url(&self) -> RegisterIPNBuilder {
         RegisterIPN::builder(self)
     }
 
     /// List IPN URL builder
     ///
-    /// Creates a [ListIPN] which is used for listing all the IPN URLs
+    /// Creates a [`ListIPN`] which is used for listing all the IPN URLs
     /// registered for the merchant.
     ///
-    /// The builder is consumed and returns a [ListIPN]
+    /// The builder is consumed and returns a [`ListIPN`]
     /// which can successfully start the listing of the IPN
     /// URLs
     ///
@@ -248,16 +265,17 @@ impl PesaPal {
     ///    .unwrap();
     ///
     /// ```
-    pub fn list_ipn_urls(&self) -> ListIPN {
+    #[must_use]
+    pub const fn list_ipn_urls(&self) -> ListIPN {
         ListIPN::new(self)
     }
 
     /// Transaction Status builder
     ///
-    /// Creates a [TransactionStatusBuilder] which is used for checking the
+    /// Creates a [`TransactionStatusBuilder`] which is used for checking the
     /// status of a transaction
     ///
-    /// The builder is consumed and returns a [TransactionStatus]
+    /// The builder is consumed and returns a [`TransactionStatus`]
     /// which can successfully start the checking of the transaction status
     ///
     /// See more [here](https://developer.pesapal.com/how-to-integrate/e-commerce/api-30-json/gettransactionstatus)
@@ -284,6 +302,7 @@ impl PesaPal {
     ///     .unwrap();
     ///
     /// ```
+    #[must_use]
     pub fn transaction_status(&self) -> TransactionStatusBuilder {
         TransactionStatus::builder(self)
     }

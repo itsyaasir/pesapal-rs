@@ -1,6 +1,6 @@
 //! The submit order endpoint allows to create new payment order
 //! A good example would be a case where the customer has clicked pay now
-//! button on your website. At this point, you call the SubmitOrderRequest and
+//! button on your website. At this point, you call the `SubmitOrderRequest` and
 //! in return you will get a response which contains a payment redirect URL
 //! which you then redirect the customer to or load the URL as an iframe within
 //! your site in case you don’t want to redirect the customer off your application.
@@ -84,7 +84,7 @@ pub struct BillingAddress {
     ///
     /// It is usually two characters long
     ///
-    /// https://en.wikipedia.org/wiki/ISO_3166-1
+    /// <https://en.wikipedia.org/wiki/ISO_3166-1>
     pub country_code: Option<String>,
     /// Customer's first name
     pub first_name: Option<String>,
@@ -114,6 +114,13 @@ impl BillingAddress {
     /// Either the phone number or the email must be provided,
     /// otherwise the request will fail.
     ///
+    /// # Returns
+    /// [`BillingAddress`] instance
+    ///
+    /// # Errors
+    ///
+    /// [`PesaPalError::ValidationError`] if either the email or the phone
+    /// number is not provided
     pub fn new(&self, phone_number: Option<u64>, email: Option<String>) -> PesaPalResult<Self> {
         if phone_number.is_none() && email.is_none() {
             return Err(PesaPalError::ValidationError(
@@ -220,7 +227,7 @@ impl SubmitOrderBuilder<'_> {
 }
 
 impl SubmitOrder<'_> {
-    /// This initializes the SubmitOrder with the client and returns a builder
+    /// This initializes the `SubmitOrder` with the client and returns a builder
     pub(crate) fn builder(client: &PesaPal) -> SubmitOrderBuilder {
         SubmitOrderBuilder::default().client(client)
     }
@@ -231,12 +238,12 @@ impl SubmitOrder<'_> {
     ///
     /// ## Returns
     ///
-    /// [SubmitOrderResponse] - Contains the necessary which conveys the
+    /// [`SubmitOrderResponse`] - Contains the necessary which conveys the
     /// successful result of the payment
     ///
     /// ## Errors
     ///
-    /// [PesaPalError::SubmitOrderError] - Incase the payment fails
+    /// [`PesaPalError::SubmitOrderError`] - Incase the payment fails
     pub async fn send(self) -> PesaPalResult<SubmitOrderResponse> {
         let url = format!("{}/{SUBMIT_ORDER_REQUEST_URL}", self.client.env.base_url());
 
@@ -244,7 +251,7 @@ impl SubmitOrder<'_> {
             .client
             .http_client
             .post(url)
-            .bearer_auth(&self.client.authenticate().await?.token)
+            .bearer_auth(&self.client.authenticate().await?)
             .json::<SubmitOrderRequest>(&self.into())
             .send()
             .await?;
