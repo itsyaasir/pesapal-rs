@@ -33,7 +33,7 @@ async fn test_submit_order_is_success() {
         .description("Shopping")
         .callback_url("https://example.com")
         .cancellation_url("https://example.com")
-        .notification_id("AABBCCDDEEFFGG")
+        .notification_id("OO5KAXIPA324AZ")
         .redirect_mode(RedirectMode::ParentWindow)
         .branch("EA")
         .billing_address(BillingAddress {
