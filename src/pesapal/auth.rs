@@ -77,7 +77,11 @@ pub async fn auth(client: &PesaPal) -> Result<AccessToken, PesaPalError> {
 #[cfg(test)]
 mod tests {
 
+    use cached::Cached;
+    use dotenvy::dotenv;
+
     use super::*;
+    use crate::Environment;
 
     #[test]
     fn test_deserialize_utc_from_string() {
@@ -102,5 +106,23 @@ mod tests {
 
         let response: AuthenticationResponse = serde_json::from_str(&json_str).unwrap();
         assert_eq!(response.expiry_date, expected_datetime);
+    }
+
+    #[tokio::test]
+    async fn test_cached_access_token() {
+        dotenv().ok();
+
+        let client = PesaPal::new(
+            dotenvy::var("CONSUMER_KEY").unwrap(),
+            dotenvy::var("CONSUMER_SECRET").unwrap(),
+            Environment::Sandbox,
+        );
+        auth_prime_cache(&client).await.unwrap();
+
+        let mut cache = AUTH_CACHE.lock().await;
+
+        assert!(cache.cache_get(&client.consumer_key).is_some());
+        assert_eq!(cache.cache_hits().unwrap(), 1);
+        assert_eq!(cache.cache_capacity().unwrap(), 1);
     }
 }
