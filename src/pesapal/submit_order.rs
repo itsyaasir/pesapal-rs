@@ -13,7 +13,6 @@
 use derive_builder::Builder;
 use serde::{Deserialize, Serialize};
 use serde_aux::prelude::deserialize_default_from_null;
-use uuid::Uuid;
 
 use super::PesaPal;
 use crate::error::{PesaPalError, PesaPalErrorResponse, PesaPalResult};
@@ -139,7 +138,7 @@ impl BillingAddress {
 impl From<SubmitOrder<'_>> for SubmitOrderRequest {
     fn from(value: SubmitOrder) -> Self {
         Self {
-            id: Uuid::new_v4().to_string(),
+            id: ulid::Ulid::new().to_string(),
             currency: value.currency,
             amount: value.amount,
             description: value.description,
