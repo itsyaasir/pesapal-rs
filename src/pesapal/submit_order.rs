@@ -12,7 +12,7 @@
 
 use derive_builder::Builder;
 use serde::{Deserialize, Serialize};
-use serde_aux::prelude::deserialize_default_from_null;
+use serde_aux::prelude::{deserialize_default_from_null, deserialize_number_from_string};
 
 use super::PesaPal;
 use crate::error::{PesaPalError, PesaPalErrorResponse, PesaPalResult};
@@ -167,7 +167,8 @@ pub struct SubmitOrderResponse {
     #[serde(deserialize_with = "deserialize_default_from_null")]
     pub error: Option<PesaPalErrorResponse>,
     /// Response Message
-    pub status: String,
+    #[serde(deserialize_with = "deserialize_number_from_string")]
+    pub status: u16,
 }
 
 /// This is the submit order builder
@@ -262,5 +263,30 @@ impl SubmitOrder<'_> {
         }
 
         Ok(res)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_submit_order_with_no_email_and_phone() {
+        let client = PesaPal::default();
+        let order = SubmitOrder::builder(&client)
+            .currency("KES")
+            .amount(2500)
+            .description("Shopping")
+            .callback_url("https://example.com")
+            .cancellation_url("https://example.com")
+            .notification_id("AABBCCDDEEFFGG")
+            .redirect_mode(RedirectMode::ParentWindow)
+            .branch("EA")
+            .billing_address(BillingAddress::default())
+            .build();
+
+        assert!(order.is_err_and(|x| x
+            .to_string()
+            .contains("either email or phone number must be provided")))
     }
 }

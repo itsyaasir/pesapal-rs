@@ -1,29 +1,29 @@
+#[cfg(test)]
 mod common;
 
+use httpmock::prelude::*;
 use pesapal::{BillingAddress, RedirectMode, SubmitOrderResponse};
 use serde_json::json;
-use wiremock::matchers::{method, path};
-use wiremock::{Mock, ResponseTemplate};
 
 use crate::common::pesapal_client;
 
 #[tokio::test]
-#[ignore = "test is currently failing"]
 async fn test_submit_order_is_success() {
     let (client, server) = pesapal_client().await;
     let sample_response = SubmitOrderResponse {
         error: None,
-        merchant_reference: "AA22BB33CC".to_string(),
-        order_tracking_id: "AA22BB33CC".to_string(),
+        merchant_reference: "PQ54MC34FA129".to_string(),
+        order_tracking_id: "awed-fxas-tr3a-zxqm-palu".to_string(),
         redirect_url: "https://example.com".to_string(),
-        status: 200.to_string(),
+        status: 200,
     };
 
-    Mock::given(method("POST"))
-        .and(path("api/Transactions/SubmitOrderRequest"))
-        .respond_with(ResponseTemplate::new(200).set_body_json(json!(sample_response)))
-        .expect(1)
-        .mount(&server)
+    let mock = server
+        .mock_async(|when, then| {
+            when.path_contains("/api/Transactions/SubmitOrderRequest")
+                .method(POST);
+            then.json_body(json!(sample_response)).status(200);
+        })
         .await;
 
     let order = client
@@ -45,6 +45,8 @@ async fn test_submit_order_is_success() {
         .send()
         .await
         .unwrap();
+
+    mock.assert_async().await;
 
     assert_eq!(sample_response, order)
 }
