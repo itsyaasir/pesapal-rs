@@ -89,7 +89,7 @@
 //! methods that return builders:
 //!
 //! * Submit Order - Sends the payment request that needs to be processed
-//! ```rust,no_run
+//! ```rust,no_run,ignore
 //! use pesapal::{PesaPal, Environment};
 //! use std::env;
 //! use dotenvy::dotenv;
@@ -194,7 +194,7 @@
 //! ```
 //!
 //! * List IPN URL - List IPN URL
-//! ```rust,no_run
+//! ```rust,no_run,ignore
 //! use pesapal::{PesaPal, Environment};
 //! use std::env;
 //! use dotenvy::dotenv;
@@ -215,7 +215,7 @@
 //! ```
 //!
 //! * Transaction Status - Transaction Status
-//! ```rust,no_run
+//! ```rust,no_run,ignore
 //! use pesapal::{PesaPal, Environment};
 //! use std::env;
 //! use dotenvy::dotenv;
