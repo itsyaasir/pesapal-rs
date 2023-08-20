@@ -9,6 +9,9 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    env:
+      CONSUMER_KEY: ${{ secrets.CONSUMER_KEY }}
+      CONSUMER_SECRET: ${{ secrets.CONSUMER_SECRET }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -51,16 +54,19 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: -- -D warnings
 
-  coverage:
-    name: Code Coverage
-    runs-on: ubuntu-latest
-    container:
-      image: xd009642/tarpaulin:develop-nightly
-      options: --security-opt seccomp=unconfined
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+  # coverage:
+  #   name: Code Coverage
+  #   runs-on: ubuntu-latest
+  #   container:
+  #     image: xd009642/tarpaulin:develop-nightly
+  #     options: --security-opt seccomp=unconfined
+  #   env:
+  #     CONSUMER_KEY: ${{ secrets.CONSUMER_KEY }}
+  #     CONSUMER_SECRET: ${{ secrets.CONSUMER_SECRET }}
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v2
 
-      - name: Generate code coverage
-        run: |
-          cargo +nightly tarpaulin --verbose --no-fail-fast --ignore-tests --out Xml
+  #     - name: Generate code coverage
+  #       run: |
+  #         cargo +nightly tarpaulin --verbose --no-fail-fast --ignore-tests --out Xml

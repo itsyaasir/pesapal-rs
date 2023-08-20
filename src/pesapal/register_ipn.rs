@@ -23,7 +23,7 @@
 //! to register your IPN URL. Upon registration, you receive a notification Id
 //! which is a mandatory field when submitting an order request to Pesapal API
 //! 3.0.
-//! This notification_id uniquely identifies the endpoint Pesapal will send
+//! This `notification_id` uniquely identifies the endpoint Pesapal will send
 //! alerts to whenever a payment status changes for each transaction processed
 //! via API 3.0
 
@@ -103,7 +103,7 @@ pub struct RegisterIPN<'pesa> {
 }
 
 impl RegisterIPN<'_> {
-    /// Creates an instance RegisterIPNBuilder
+    /// Creates an instance `RegisterIPNBuilder`
     pub(crate) fn builder(client: &PesaPal) -> RegisterIPNBuilder {
         RegisterIPNBuilder::default().client(client)
     }
@@ -114,12 +114,12 @@ impl RegisterIPN<'_> {
     ///
     /// ## Returns
     ///
-    /// [RegisterIPNResponse] - Contains the necessary information about the
+    /// [`RegisterIPNResponse`] - Contains the necessary information about the
     /// IPN URL that has been registered
     ///
     /// ## Errors
     ///
-    /// [PesaPalError::RegisterIPNError] - Incase the registration fails
+    /// [`PesaPalError::RegisterIPNError`] - Incase the registration fails
     pub async fn send(self) -> PesaPalResult<RegisterIPNResponse> {
         let url = format!("{}/{REGISTER_IPN_URL}", self.client.env.base_url());
 
@@ -127,7 +127,7 @@ impl RegisterIPN<'_> {
             .client
             .http_client
             .post(url)
-            .bearer_auth(&self.client.authenticate().await?.token)
+            .bearer_auth(&self.client.authenticate().await?)
             .json::<RegisterIPNRequest>(&self.into())
             .send()
             .await?;

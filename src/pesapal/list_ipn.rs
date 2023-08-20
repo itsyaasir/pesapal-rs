@@ -37,19 +37,24 @@ pub struct ListIPN<'pesa> {
 }
 
 impl<'pesa> ListIPN<'pesa> {
-    /// Create a new instance of the ListIPN builder
-    pub fn new(client: &'pesa crate::PesaPal) -> Self {
+    /// Create a new instance of the `ListIPN` builder
+    #[must_use]
+    pub const fn new(client: &'pesa crate::PesaPal) -> Self {
         Self { client }
     }
 
     /// # List IPN URLs
     ///
-    ///  Send the request to PesaPal, and returns the IPN URLs
+    ///  Send the request to `PesaPal`, and returns the IPN URLs
     /// registered for the merchant.
     ///
     /// # Returns
     ///
     /// Returns a list of IPN URLs registered for the merchant.
+    ///
+    /// # Errors
+    /// If it encounters error with any of the responses, we just print out the
+    /// error
     pub async fn send(&self) -> crate::PesaPalResult<IPNListResponse> {
         let url = format!("{}/{}", self.client.env.base_url(), LIST_IPN_URL);
         let response = self
@@ -63,7 +68,7 @@ impl<'pesa> ListIPN<'pesa> {
 
         response.ipns.iter().for_each(|ipn| {
             if let Some(error) = &ipn.error {
-                eprintln!("Error: {:?}", error);
+                eprintln!("Error: {error:?}");
             }
         });
 

@@ -14,10 +14,11 @@ pub enum Environment {
 
 impl Environment {
     /// Base URL for the two kinds of Environment
-    pub fn base_url(&self) -> &str {
+    #[must_use]
+    pub const fn base_url(&self) -> &str {
         match self {
-            Environment::Production => "https://pay.pesapal.com/v3",
-            Environment::Sandbox => "https://cybqa.pesapal.com/pesapalv3",
+            Self::Production => "https://pay.pesapal.com/v3",
+            Self::Sandbox => "https://cybqa.pesapal.com/pesapalv3",
         }
     }
 }

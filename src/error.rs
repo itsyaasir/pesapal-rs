@@ -27,6 +27,7 @@ pub enum PesaPalError {
 
 /// Error response for the Pesapal API error
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize)]
+#[non_exhaustive]
 pub struct PesaPalErrorResponse {
     pub code: String,
     pub error_type: String,
@@ -51,7 +52,9 @@ impl From<serde_json::Error> for PesaPalError {
     }
 }
 
+/// Error response for the `TransactionStatus` Endpoint
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub struct TransactionStatusError {
     pub error_type: String,
     pub code: String,

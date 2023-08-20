@@ -90,7 +90,7 @@ impl Refund<'_> {
     ///
     /// ## Errors
     ///
-    /// [PesaPalError::RefundError] - with status 500 and error message incase the refund
+    /// [`PesaPalError::RefundError`] - with status 500 and error message incase the refund
     /// fails
     pub async fn send(self) -> PesaPalResult<RefundResponse> {
         let url = format!("{}/{REFUND_REQUEST_URL}", self.client.env.base_url());
@@ -98,7 +98,7 @@ impl Refund<'_> {
             .client
             .http_client
             .post(url)
-            .bearer_auth(&self.client.authenticate().await?.token)
+            .bearer_auth(&self.client.authenticate().await?)
             .json::<RefundRequest>(&self.into())
             .send()
             .await?;

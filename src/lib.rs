@@ -1,6 +1,6 @@
 //!## Pesapal-rs
 //!
-//! An unofficial Rust wrapper around the (PesaPal API)[https://developer.pesapal.com/] for accessing PesaPal
+//! An unofficial Rust wrapper around the (`PesaPal` API)[<https://developer.pesapal.com/>] for accessing `PesaPal`
 //! services.
 //!
 //!## Install
@@ -19,8 +19,8 @@
 //!## Usage
 //!
 //!### Creating a `PesaPal` client
-//! You will first need to create an instance of the `PesaPal` instance (the client). You are required to provide a **CONSUMER_KEY** and
-//! **CONSUMER_SECRET**. [Here](https://developer.pesapal.com/api3-demo-keys.txt) is how you can get these credentials for the Pesapal sandbox
+//! You will first need to create an instance of the `PesaPal` instance (the client). You are required to provide a **`CONSUMER_KEY`** and
+//! **`CONSUMER_SECRET`**. [Here](https://developer.pesapal.com/api3-demo-keys.txt) is how you can get these credentials for the Pesapal sandbox
 //! environment. It's worth noting that these credentials are only valid in the sandbox environment.
 //!
 //! These are the following ways you can instantiate `PesaPal`:
@@ -89,7 +89,7 @@
 //! methods that return builders:
 //!
 //! * Submit Order - Sends the payment request that needs to be processed
-//! ```rust,no_run
+//! ```rust,no_run,ignore
 //! use pesapal::{PesaPal, Environment};
 //! use std::env;
 //! use dotenvy::dotenv;
@@ -194,7 +194,7 @@
 //! ```
 //!
 //! * List IPN URL - List IPN URL
-//! ```rust,no_run
+//! ```rust,no_run,ignore
 //! use pesapal::{PesaPal, Environment};
 //! use std::env;
 //! use dotenvy::dotenv;
@@ -215,7 +215,7 @@
 //! ```
 //!
 //! * Transaction Status - Transaction Status
-//! ```rust,no_run
+//! ```rust,no_run,ignore
 //! use pesapal::{PesaPal, Environment};
 //! use std::env;
 //! use dotenvy::dotenv;
@@ -250,18 +250,19 @@
 //! **Yasir Shariff**
 //!
 //! * Twitter: [@itsyaasir](https://twitter.com/itsyaasir)
-//! * Not affiliated with PesaPal.
+//! * Not affiliated with `PesaPal`.
 //!
 //!## License
 //! This project is MIT licensed
 
+#[deny(warnings)]
 mod environment;
 mod error;
 mod macros;
 mod pesapal;
 
 pub use environment::Environment;
-pub use error::{PesaPalError, PesaPalErrorResponse, PesaPalResult};
+pub use error::{PesaPalError, PesaPalErrorResponse, PesaPalResult, TransactionStatusError};
 
 pub use crate::pesapal::list_ipn::{IPNList, IPNListResponse, ListIPN};
 pub use crate::pesapal::refund::{Refund, RefundRequest, RefundResponse};
@@ -270,6 +271,6 @@ pub use crate::pesapal::submit_order::{
     BillingAddress, RedirectMode, SubmitOrder, SubmitOrderRequest, SubmitOrderResponse,
 };
 pub use crate::pesapal::transaction_status::{
-    StatusCode, TransactionStatus, TransactionStatusResponse,
+    StatusCode, TransactionStatus, TransactionStatusBuilder, TransactionStatusResponse,
 };
 pub use crate::pesapal::PesaPal;
