@@ -1,13 +1,12 @@
-use dotenvy::dotenv;
+use std::env;
+
 use pesapal::{BillingAddress, Environment, NotificationType, PesaPal, RedirectMode};
 
 #[tokio::test]
 async fn test_submit_order() {
-    dotenv().ok();
-
     let client = PesaPal::new(
-        dotenvy::var("CONSUMER_KEY").unwrap(),
-        dotenvy::var("CONSUMER_SECRET").unwrap(),
+        env::var("CONSUMER_KEY").unwrap(),
+        env::var("CONSUMER_SECRET").unwrap(),
         Environment::Sandbox,
     );
 
