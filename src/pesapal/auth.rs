@@ -52,11 +52,7 @@ pub type AccessToken = String;
 #[cached(
     name = "AUTH_CACHE",
     type = "TimedSizedCache<String,AccessToken>",
-    create = "{ TimedSizedCache::with_size_and_lifespan_and_refresh(
-                1,
-                300,
-                true
-            ) }",
+    create = "{ TimedSizedCache::with_size_and_lifespan_and_refresh(1, 300,    true) }",
     convert = r#"{ format!("{}", client.consumer_key) }"#,
     result = true
 )]
