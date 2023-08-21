@@ -20,7 +20,7 @@ serde-aux = "4.2"
 serde_repr = "0.1"
 chrono = { version = "0.4", default-features = false, features = ["time"] }
 cached = "0.44"
-ulid = { version = "1.0", features = ["serde"] }
+ulid = "1.0"
 
 
 [dev-dependencies]
