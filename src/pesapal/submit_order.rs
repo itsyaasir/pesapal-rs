@@ -12,10 +12,10 @@
 
 use derive_builder::Builder;
 use serde::{Deserialize, Serialize};
-use serde_aux::prelude::{deserialize_default_from_null, deserialize_number_from_string};
+use serde_aux::prelude::deserialize_number_from_string;
 
 use super::PesaPal;
-use crate::error::{PesaPalError, PesaPalErrorResponse, PesaPalResult};
+use crate::error::{PesaPalError, PesaPalResult};
 
 const SUBMIT_ORDER_REQUEST_URL: &str = "api/Transactions/SubmitOrderRequest";
 
@@ -163,9 +163,7 @@ pub struct SubmitOrderResponse {
     ///
     /// Redirect to this URl or load it within an iframe
     pub redirect_url: String,
-    /// Error message
-    #[serde(deserialize_with = "deserialize_default_from_null")]
-    pub error: Option<PesaPalErrorResponse>,
+
     /// Response Message
     #[serde(deserialize_with = "deserialize_number_from_string")]
     pub status: u16,
@@ -208,7 +206,6 @@ pub struct SubmitOrder<'pesa> {
     #[builder(setter(into, strip_option), default)]
     #[doc = r"If your business has multiple stores / branches, you can define the name of the store / branch to which this particular payment will be accredited to."]
     branch: Option<String>,
-
     #[doc = r"The billing address of the customer"]
     billing_address: BillingAddress,
 }
@@ -255,14 +252,11 @@ impl SubmitOrder<'_> {
             .json::<SubmitOrderRequest>(&self.into())
             .send()
             .await?;
-
-        let res: SubmitOrderResponse = response.json().await?;
-
-        if let Some(error) = res.error {
-            return Err(PesaPalError::SubmitOrderError(error));
+        print!("{}", response.status());
+        match response.status().is_success() {
+            true => Ok(response.json().await?),
+            false => Err(PesaPalError::SubmitOrderError(response.json().await?)),
         }
-
-        Ok(res)
     }
 }
 
