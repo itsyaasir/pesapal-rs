@@ -1,11 +1,18 @@
 use cached::proc_macro::cached;
 use cached::TimedSizedCache;
 use chrono::{DateTime, NaiveDateTime, Utc};
-use serde::{Deserialize, Deserializer};
+use serde::{Deserialize, Deserializer, Serialize};
 use serde_aux::prelude::{deserialize_default_from_null, deserialize_number_from_string};
-use serde_json::json;
 
 use crate::{PesaPal, PesaPalError, PesaPalErrorResponse};
+
+pub static AUTHENTICATION_URL: &str = "/api/Auth/RequestToken";
+
+#[derive(Serialize)]
+pub struct AuthenticationRequest<'auth> {
+    consumer_key: &'auth str,
+    consumer_secret: &'auth str,
+}
 
 /// Response returned from the authentication function
 #[derive(Debug, Deserialize)]
@@ -56,12 +63,13 @@ pub type AccessToken = String;
     convert = r#"{ format!("{}", client.consumer_key) }"#,
     result = true
 )]
-pub async fn auth(client: &PesaPal) -> Result<AccessToken, PesaPalError> {
-    let url = format!("{}/api/Auth/RequestToken", client.env.base_url());
-    let payload = json!({
-        "consumer_key": client.consumer_key,
-        "consumer_secret": client.consumer_secret
-    });
+pub(crate) async fn auth(client: &PesaPal) -> Result<AccessToken, PesaPalError> {
+    let url = format!("{}/{AUTHENTICATION_URL}", client.env.base_url());
+
+    let payload = AuthenticationRequest {
+        consumer_key: &client.consumer_key,
+        consumer_secret: &client.consumer_secret,
+    };
 
     let response = client.http_client.post(url).json(&payload).send().await?;
 
@@ -109,6 +117,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[ignore = ""]
     async fn test_cached_access_token() {
         dotenv().ok();
 

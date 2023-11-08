@@ -264,6 +264,7 @@ mod pesapal;
 pub use environment::Environment;
 pub use error::{PesaPalError, PesaPalErrorResponse, PesaPalResult, TransactionStatusError};
 
+pub use crate::pesapal::auth::{AuthenticationRequest, AuthenticationResponse};
 pub use crate::pesapal::list_ipn::{IPNList, IPNListResponse, ListIPN};
 pub use crate::pesapal::refund::{Refund, RefundRequest, RefundResponse};
 pub use crate::pesapal::register_ipn::{NotificationType, RegisterIPN, RegisterIPNResponse};

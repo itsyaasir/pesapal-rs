@@ -10,15 +10,20 @@ pub enum Environment {
     /// Sandbox environment which can be used for testing
     #[default]
     Sandbox,
+    /// Custom Environment
+    ///
+    /// Mostly used for Mock testing Environment
+    Custom(String),
 }
 
 impl Environment {
     /// Base URL for the two kinds of Environment
     #[must_use]
-    pub const fn base_url(&self) -> &str {
+    pub fn base_url(&self) -> &str {
         match self {
             Self::Production => "https://pay.pesapal.com/v3",
             Self::Sandbox => "https://cybqa.pesapal.com/pesapalv3",
+            Self::Custom(url) => url.as_str(),
         }
     }
 }

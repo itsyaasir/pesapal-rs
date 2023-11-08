@@ -1,4 +1,4 @@
-mod auth;
+pub mod auth;
 pub mod list_ipn;
 pub mod refund;
 pub mod register_ipn;
@@ -23,7 +23,7 @@ static PESAPAL_PACKAGE_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// [`PesaPal`] This is the client struct which allows communication with
 /// the `PesaPal` services
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct PesaPal {
     /// Consumer Key - This is provided by the PesaPal
     consumer_key: String,
